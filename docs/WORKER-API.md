@@ -1,6 +1,6 @@
 # Worker API sözleşmesi
 
-Bu belge uygulanacak sözleşmedir; bu depoda Worker kodu veya çalışan servis yoktur. İstemci sadece `https://admin.sarioglukapi.com/api` üzerinden erişir; GitHub API'ye doğrudan erişmez. Tüm cevaplar UTF-8 JSON, görsel endpoint'i hariç `Content-Type: application/json` ve `Cache-Control: no-store` olmalıdır. `/api` ve görüntü istekleri Access korumasındadır. Oturum bitiminde API mümkünse login HTML yönlendirmesi yerine 401 döndürür. İstemci HTML cevabını başarısız sayar.
+Bu belge API sözleşmesidir. Fotoğraf listeleme Worker'ı [bu depoda](../workers/category-images.js) bulunur; `/api/me` ve yayınlama endpoint'leri ayrıca uygulanmalıdır. İstemci liste için `https://admin.sarioglukapi.com/api` adresini kullanır; önizlemeler herkese açık GitHub deposundan yüklenir. API cevapları UTF-8 JSON ve `Cache-Control: no-store` olmalıdır. API istekleri Access korumasındadır. Oturum bitiminde API mümkünse login HTML yönlendirmesi yerine 401 döndürür. İstemci HTML cevabını başarısız sayar.
 
 ## Sabitler ve veri kaynağı
 
@@ -14,13 +14,13 @@ Doğrulanmış Access kimliğinden `{"email":"admin@example.com"}` döndürür. 
 
 Kategori isimleri ve kodları istemcide sabittir; ayrı bir kategori listesi endpoint'i gerekli değildir. Kenar çubuğundaki fotoğraf sayıları, ilgili kategorinin görselleri yüklendiğinde hesaplanır.
 
-### `GET /api/categories/:category/images`
+### `GET /api/category-images/:category`
 
 ```json
-{"category":"ahsap","revision":"CURRENT_MAIN_COMMIT_SHA","images":[{"id":"BLOB_SHA","name":"01.png","path":"src/assets/images/categories/ahsap/01.png","sha":"BLOB_SHA","previewUrl":"/api/categories/ahsap/images/01.png?revision=CURRENT_MAIN_COMMIT_SHA","size":250000}]}
+{"category":"ahsap","revision":"CURRENT_MAIN_COMMIT_SHA","images":[{"id":"BLOB_SHA","name":"01.png","path":"src/assets/images/categories/ahsap/01.png","sha":"BLOB_SHA","previewUrl":"https://raw.githubusercontent.com/ctufansarioglu/sarioglukapi.com/CURRENT_MAIN_COMMIT_SHA/src/assets/images/categories/ahsap/01.png","size":250000}]}
 ```
 
-Listeyi sayısal dosya adına göre sıralayın. Blob SHA tek başına eşsiz olmayabilir (aynı içerik birden fazla yolda bulunabilir); kimlik path ve SHA birlikte doğrulanır. `revision` commit SHA, `sha` blob SHA'dır. Preview URL'si aynı origin'deki korumalı Worker endpoint'i olmalı; GitHub veya üçüncü taraf URL kullanmayın. Yukarıdaki `GET /api/categories/:category/images/:filename?revision=<commit>` PNG binary döndürür; path'i whitelist ile doğrulayın, revision'ın gerçek erişilebilir commit olduğunu kontrol edin, GitHub blob içeriğini sunucuda alın, `Content-Type: image/png`, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store` kullanın. Böylece draft açıkken önizleme bir sonraki commit'e kaymaz. Publish image yanıtının revision'ına dayanır.
+Listeyi sayısal dosya adına göre sıralayın. Blob SHA tek başına eşsiz olmayabilir (aynı içerik birden fazla yolda bulunabilir); kimlik path ve SHA birlikte değerlendirilir. `revision` commit SHA, `sha` blob SHA'dır. `previewUrl` dosyayı GitHub'ın herkese açık ham içerik adresinden belirtilen commit ile yükler. Böylece taslak açıkken önizleme bir sonraki commit'e kaymaz ve fotoğraf başına Worker isteği yapılmaz. Publish image yanıtının revision'ına dayanır.
 
 ### `POST /api/categories/:category/publish`
 
@@ -51,11 +51,10 @@ Başarılı yanıt:
 
 ## Güvenlik ve limitler
 
-- Cloudflare Access JWT imzasını Cloudflare takımının JWKS anahtarlarıyla ve beklenen `iss`, **bu uygulamaya ait `aud`**, `exp`/`nbf` değerleriyle doğrulayın. Eksik/geçersiz token 401, yetkisiz e-posta 403. Header varlığını doğrulama saymayın. Secret/token/log bilgisi istemciye dönmesin.
-- Yalnızca izinli host `admin.sarioglukapi.com` ve kategori yolları kabul edilsin. `%2e`, encoded slash, `..`, ters slash, Unicode ve çift decode dahil traversal reddedilsin. Alternatif `workers.dev`, preview ve route dışı erişimi kapatın veya Worker seviyesinde Access koruyun; uygulama içinde host ve JWT'yi de doğrulayın.
+- Fotoğraf listesi endpoint'inin erişimi Cloudflare Access tarafından yönetilir; Worker içinde ek kimlik doğrulaması yapılmaz. GitHub önizleme adresleri herkese açık depoya doğrudan erişir.
 - POST için `Origin: https://admin.sarioglukapi.com` zorunlu; `Sec-Fetch-Site` gibi ek CSRF kontrolleri ve Access cookie koruması uygulayın. CORS'u genel erişime açmayın. GET yan etkisiz olsun. Request boyutunu parse öncesinde ve akış boyunca sınırlayın.
 - Varsayılan istemci limiti 5 MiB/dosya ve toplam 20 MiB'dir. Worker bunları eşit veya daha düşük değerlerle ve multipart overhead için örneğin 21 MiB istek limitiyle uygular; upload adedi ve manifest boyutuna da üst sınır koyun (örneğin 20 dosya, 64 KiB manifest). GitHub'ın istek/secondary rate limitlerini ve Workers Free CPU, 128 MB bellek, subrequest sınırlarını hesaba katın. Base64 şişmesi ve parse kopyaları belleği artırır; gereksiz paralellikten kaçının. [Workers limitleri](https://developers.cloudflare.com/workers/platform/limits/). İstek body limitleri Cloudflare zone planına bağlıdır; bunlar uygulama limitlerinin yerine geçmez.
-- `GITHUB_TOKEN` Worker Secret; `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`, izinli e-posta ve limitler sunucu yapılandırmasıdır. Fine-grained PAT veya GitHub App sadece hedef repository için **Contents: read and write** yetkisine sahip olmalı; gereksiz administration/workflows yetkisi vermeyin. GitHub App tercih edilirse kısa ömürlü installation token kullanın. Gizli değerleri frontend, URL, hata veya loglara yazmayın.
+- Listeleme Worker'ında `GITHUB_API_KEY` Worker secret'tır. Erişim Cloudflare Access tarafından yönetilir. Listeleme için hedef repository üzerinde **Contents: read** yetkisi yeterlidir. Yayınlama için ayrıca yetkilendirilmiş bir uygulama gerekir.
 
 ## Hata yanıtları ve testler
 

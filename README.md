@@ -1,6 +1,6 @@
 # Sarıoğlu Kapı — Ürün Yönetimi
 
-Sarıoğlu Kapı ürün fotoğrafları için bağımsız, statik React yönetim paneli. Gerçek veriler yalnızca aynı origin üzerindeki Worker API'den gelir. Bu depo Worker içermez; ana siteye kod değişikliği yapılmaz.
+Sarıoğlu Kapı ürün fotoğrafları için bağımsız, statik React yönetim paneli. Ürün listesi aynı origin üzerindeki Worker API'den, önizlemeler herkese açık GitHub deposundan gelir. Fotoğraf listeleme Worker'ı bu depodadır; ana siteye kod değişikliği yapılmaz.
 
 ## Gereksinimler ve kurulum
 
@@ -39,6 +39,7 @@ Bu dizini ayrı bir GitHub deposuna aktarın; kullanıcı açıkça istemedikçe
 - `src/services/`: gerçek ve development API katmanları, sözleşme doğrulaması.
 - `src/assets/mock/`: yalnızca development modundaki örnek ürün fotoğrafları.
 - `src/styles/`: tasarım değerleri, yerleşim, galeri ve durumlar için Emotion stilleri.
+- `workers/category-images.js`: Cloudflare fotoğraf listeleme Worker'ı; [kurulum](docs/CATEGORY-IMAGES-WORKER.md).
 - `.github/workflows/deploy.yml`: panelin bağımsız Pages workflow'u.
 - `docs/WORKER-API.md`: uygulanması gereken Worker sözleşmesi.
 - `tests/`: hedefli taslak ve doğrulama testleri.

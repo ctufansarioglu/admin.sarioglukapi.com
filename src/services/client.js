@@ -33,6 +33,10 @@ export function validateImages(result, category, { origin, base = '/api', mock =
     if (paths.has(image.path)) throw invalid()
     paths.add(image.path)
     if (mock && (image.previewUrl.startsWith('data:image/') || image.previewUrl.startsWith('/src/assets/mock/'))) continue
+    const categoryPrefix = `src/assets/images/categories/${category}/`
+    if (/^[a-f0-9]{40}$/.test(result.revision) && image.path.startsWith(categoryPrefix) &&
+        /^[0-9]+\.png$/.test(image.path.slice(categoryPrefix.length)) &&
+        image.previewUrl === `https://raw.githubusercontent.com/ctufansarioglu/sarioglukapi.com/${result.revision}/${image.path}`) continue
     try {
       const url = new URL(image.previewUrl, origin)
       if (url.origin !== origin || !url.pathname.startsWith(prefix)) throw invalid()
@@ -61,7 +65,7 @@ export function createApiClient({ origin, base = '/api', fetcher = globalThis.fe
   }
   return {
     me: async (options) => validateIdentity(await request('/me', options)),
-    images: async (category, options) => validateImages(await request(`/categories/${encodeURIComponent(category)}/images`, options), category, { origin, base }),
+    images: async (category, options) => validateImages(await request(`/category-images/${encodeURIComponent(category)}`, options), category, { origin, base }),
     publish: (category, revision, items) => {
       const form = new FormData()
       form.append('manifest', JSON.stringify(createManifest(revision, items)))

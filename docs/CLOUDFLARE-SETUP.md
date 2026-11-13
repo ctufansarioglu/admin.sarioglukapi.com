@@ -1,6 +1,6 @@
 # Cloudflare ve GitHub Pages kurulumu
 
-Bu işlemler kullanıcı tarafından yapılır; bu projede Worker, DNS veya Access kaynağı oluşturulmaz. Menü isimleri değişebilir. Cloudflare ve GitHub hesaplarında ilgili alan ve depo yönetim yetkileri gerekir.
+Bu işlemler kullanıcı tarafından yapılır; bu proje Cloudflare'da otomatik kaynak oluşturmaz. Menü isimleri değişebilir. Cloudflare ve GitHub hesaplarında ilgili alan ve depo yönetim yetkileri gerekir.
 
 ## 1. Pages ve DNS
 
@@ -15,15 +15,14 @@ Bu işlemler kullanıcı tarafından yapılır; bu projede Worker, DNS veya Acce
 
 1. Cloudflare dashboard → Zero Trust (veya Cloudflare One) alanında hesap/team oluşturun. Zero Trust → Settings → Authentication → Login methods altında **One-time PIN** etkinliğini kontrol edin. Hesabın güncel arayüzünde konum farklıysa Authentication / Login methods arayın.
 2. Access controls → Applications (bazı arayüzlerde Access → Applications) → Add an application → **Self-hosted**. Adı örneğin `Sarıoğlu Yönetim`; public hostname `admin.sarioglukapi.com`, path boş ya da `/*` olacak şekilde tüm paneli ve `/api/*` adreslerini kapsayın.
-3. Session duration'ı iş ihtiyacına göre seçin (örneğin 8 saat). Login method olarak One-time PIN seçin. Allow policy ekleyip Include → Emails ile yalnızca yetkili kişilerin tam e-posta adreslerini girin. Geniş domain veya everyone kuralı eklemeyin. Kaydedin ve uygulama **Audience (AUD) tag** değerini not edin; Worker imza ve audience doğrulaması için kullanır.
+3. Session duration'ı iş ihtiyacına göre seçin (örneğin 8 saat). Login method olarak One-time PIN seçin. Allow policy ekleyip Include → Emails ile yalnızca yetkili kişilerin tam e-posta adreslerini girin. Geniş domain veya everyone kuralı eklemeyin.
 4. E-posta PIN ile izinli hesap girişini ve farklı bir e-posta ile reddi gizli pencerede deneyin. Access uygulaması `admin.../api/*` isteklerini de kapsamalıdır. [Self-hosted uygulamalar](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/).
 
 ## 3. Worker hazır olduğunda
 
-1. Worker'ı [API sözleşmesine](WORKER-API.md) göre kendiniz geliştirin. Token'ı Worker secret olarak tanımlayın; Worker koduna veya frontend build'ine koymayın.
-2. Workers & Pages → ilgili Worker → Settings → Domains & Routes → Add → Route: `admin.sarioglukapi.com/api/*` ve ilgili zone. Bu bir **route**'tur; panelin tamamına Worker custom domain atamayın. DNS kaydı proxied olmalıdır.
-3. Worker her istekte `Cf-Access-Jwt-Assertion` imzasını ve issuer, audience, süre ile isteğe bağlı email yetkisini doğrulasın. Access yalnızca header'ın varlığına bakılarak doğrulanamaz. [Access uygulama token'ı](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/application-token/).
-4. `workers.dev` ve preview URL erişimini kapatın veya Worker genelinde Access koruması sağlayın; yalnızca hostname bazlı policy alternatif adresleri korumaz. Worker ayrıca izin verilen hostu zorunlu tutmalı ve doğrulanmamış isteği reddetmelidir. [Worker Access seçenekleri](https://developers.cloudflare.com/workers/configuration/cloudflare-access/).
-5. Oturumsuz API çağrısının JSON verisi veya görsel vermediğini, yanlış audience'lı token'ın reddedildiğini, Origin/CSRF kontrollerini ve izinli kullanıcının `/api/me` yanıtını test edin. Worker'ın `/api` dışına ve diğer kategorilere erişmesine izin vermeyin.
+1. Fotoğraf listeleme Worker'ını [kurulum rehberine](CATEGORY-IMAGES-WORKER.md) göre yapılandırın. Diğer endpoint'ler için [API sözleşmesini](WORKER-API.md) izleyin. Token'ı Worker secret olarak tanımlayın; Worker koduna veya frontend build'ine koymayın.
+2. Fotoğraf Worker'ı için Workers & Pages → ilgili Worker → Settings → Domains & Routes → Add → Route: `admin.sarioglukapi.com/api/category-images/*` ve ilgili zone. Bu bir **route**'tur; panelin tamamına Worker custom domain atamayın. DNS kaydı proxied olmalıdır.
+3. Fotoğraf Worker'ının erişimi Cloudflare Access tarafından yönetilir; Worker içinde ek JWT doğrulaması yapılmaz. [Worker Access seçenekleri](https://developers.cloudflare.com/workers/configuration/cloudflare-access/).
+4. `/api/me` ve yayınlama endpoint'lerini kendi rotaları ve uygulamalarıyla ayrıca yapılandırın.
 
-GitHub Pages statik dosyaları varsayılan `github.io` adresinden erişilebilir olabilir; Access bu origin'i gizli hale getirmez. Frontend kodu ve içeriği herkese açık kabul edilir. Tüm veri ve yazma güvenliği Worker doğrulamalarına dayanmalıdır.
+GitHub Pages statik dosyaları varsayılan `github.io` adresinden erişilebilir olabilir; Access bu origin'i gizli hale getirmez. Frontend kodu ve içeriği herkese açık kabul edilir.

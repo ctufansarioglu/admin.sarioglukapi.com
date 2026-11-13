@@ -66,6 +66,35 @@ test('görsel snapshot yanıtları sözleşmeye göre doğrulanır', async () =>
   }
 })
 
+test('görseller yeni kategori endpointinden alınır ve istek seçenekleri korunur', async () => {
+  let request
+  const controller = new AbortController()
+  const api = createApiClient({ origin, base: '/custom-api', fetcher: async (url, options) => {
+    request = { url, options }
+    return json({ category: 'amerikan/panel', revision: 'rev', images: [] })
+  } })
+  await api.images('amerikan/panel', { signal: controller.signal })
+  assert.equal(request.url, '/custom-api/category-images/amerikan%2Fpanel')
+  assert.equal(request.options.signal, controller.signal)
+})
+
+test('commit ve fotoğraf yoluyla eşleşen GitHub önizleme adresleri kabul edilir', async () => {
+  const revision = 'a'.repeat(40)
+  const path = 'src/assets/images/categories/ahsap/01.png'
+  const previewUrl = `https://raw.githubusercontent.com/ctufansarioglu/sarioglukapi.com/${revision}/${path}`
+  const image = { path, sha: 'sha', previewUrl }
+  const valid = createApiClient({ origin, fetcher: async () => json({ category: 'ahsap', revision, images: [image] }) })
+  assert.equal((await valid.images('ahsap')).images[0].previewUrl, previewUrl)
+  for (const altered of [
+    { ...image, previewUrl: previewUrl.replace(revision, 'b'.repeat(40)) },
+    { ...image, path: 'src/assets/images/categories/lake/01.png' },
+    { ...image, previewUrl: previewUrl.replace('raw.githubusercontent.com', 'example.com') },
+  ]) {
+    const invalid = createApiClient({ origin, fetcher: async () => json({ category: 'ahsap', revision, images: [altered] }) })
+    await assert.rejects(invalid.images('ahsap'), /Ürün bilgileri okunamadı/)
+  }
+})
+
 test('HTML veya okunamayan JSON yanıtı hata kabul edilir', async () => {
   const api = createApiClient({ origin, fetcher: async () => new Response('<html>', { headers: { 'content-type': 'text/html' } }) })
   await assert.rejects(api.me(), /Oturumunuzu kontrol edin/)

@@ -12,30 +12,36 @@ def run():
         browser = playwright.chromium.launch(headless=True)
         page = browser.new_page()
         requests = []
+        previews = []
+        revision = 'a' * 40
 
         def respond(route):
             path = urlparse(route.request.url).path
             requests.append(path)
             if path == '/api/me':
                 route.fulfill(json={'email': 'admin@example.com'})
-            elif path in ('/api/categories/ahsap/images', '/api/categories/lake/images'):
+            elif path in ('/api/category-images/ahsap', '/api/category-images/lake'):
                 category = path.split('/')[3]
                 count = 2 if category == 'ahsap' else 1
                 images = [{
                     'name': f'{index:02}.png',
-                    'path': f'{category}/{index:02}.png',
+                    'path': f'src/assets/images/categories/{category}/{index:02}.png',
                     'sha': f'sha-{index}',
-                    'previewUrl': f'/api/preview/{category}/{index:02}.png',
+                    'previewUrl': f'https://raw.githubusercontent.com/ctufansarioglu/sarioglukapi.com/{revision}/src/assets/images/categories/{category}/{index:02}.png',
                 } for index in range(1, count + 1)]
-                route.fulfill(json={'category': category, 'revision': 'rev', 'images': images})
-            elif path.startswith('/api/preview/'):
-                route.fulfill(body=PHOTO.read_bytes(), content_type='image/png')
+                route.fulfill(json={'category': category, 'revision': revision, 'images': images})
             else:
                 route.fulfill(status=404, json={'error': 'unexpected request'})
 
         page.route('**/api/**', respond)
+        def respond_preview(route):
+            previews.append(route.request.url)
+            route.fulfill(body=PHOTO.read_bytes(), content_type='image/png')
+
+        page.route('https://raw.githubusercontent.com/**', respond_preview)
         page.goto(BASE)
         page.locator('.product').first.wait_for()
+        page.wait_for_function("document.querySelector('.product img')?.naturalWidth > 0")
         sidebar = page.locator('.sidebar')
         ahsap = sidebar.get_by_role('button', name='Ahşap Doğrama', exact=False)
         lake = sidebar.get_by_role('button', name='Lake', exact=False)
@@ -47,9 +53,11 @@ def run():
         assert lake.locator('.category-count').inner_text() == '1'
         assert ahsap.locator('.category-count').inner_text() == '2'
         assert '/api/me' in requests
-        assert '/api/categories/ahsap/images' in requests
-        assert '/api/categories/lake/images' in requests
+        assert '/api/category-images/ahsap' in requests
+        assert '/api/category-images/lake' in requests
         assert '/api/categories' not in requests
+        assert all(path in ('/api/me', '/api/category-images/ahsap', '/api/category-images/lake') for path in requests), requests
+        assert any(f'/{revision}/src/assets/images/categories/ahsap/' in url for url in previews), previews
         browser.close()
         print('Only identity and requested category images were fetched.')
 
