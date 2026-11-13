@@ -20,6 +20,8 @@ def run():
             requests.append(path)
             if path == '/api/me':
                 route.fulfill(json={'email': 'admin@example.com'})
+            elif path == '/api/catalog/share' and route.request.method == 'POST':
+                route.fulfill(status=202, json={'status': 'queued'})
             elif path in ('/api/category-images/ahsap', '/api/category-images/lake'):
                 category = path.split('/')[3]
                 count = 2 if category == 'ahsap' else 1
@@ -52,14 +54,21 @@ def run():
         page.locator('.product').first.wait_for()
         assert lake.locator('.category-count').inner_text() == '1'
         assert ahsap.locator('.category-count').inner_text() == '2'
+        page.get_by_role('button', name='Kataloğu Paylaş').click()
+        page.get_by_role('button', name='Vazgeç').click()
+        assert '/api/catalog/share' not in requests
+        page.get_by_role('button', name='Kataloğu Paylaş').click()
+        page.get_by_role('button', name='Evet, Paylaş').click()
+        page.get_by_text('Katalog gönderimi başlatıldı.', exact=False).wait_for()
+        assert requests.count('/api/catalog/share') == 1
         assert '/api/me' in requests
         assert '/api/category-images/ahsap' in requests
         assert '/api/category-images/lake' in requests
         assert '/api/categories' not in requests
-        assert all(path in ('/api/me', '/api/category-images/ahsap', '/api/category-images/lake') for path in requests), requests
+        assert all(path in ('/api/me', '/api/category-images/ahsap', '/api/category-images/lake', '/api/catalog/share') for path in requests), requests
         assert any(f'/{revision}/src/assets/images/categories/ahsap/' in url for url in previews), previews
         browser.close()
-        print('Only identity and requested category images were fetched.')
+        print('Identity, image loading, and confirmed catalog dispatch requests passed.')
 
 
 if __name__ == '__main__':

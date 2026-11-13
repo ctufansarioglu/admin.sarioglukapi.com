@@ -7,6 +7,7 @@ const mockApiPromise = useMock ? import('./mockApi.js').then((module) => module.
 
 export const api = useMock ? {
   me: (...args) => mockApiPromise.then((mock) => mock.me(...args)).then(validateIdentity),
+  shareCatalog: (...args) => mockApiPromise.then((mock) => mock.shareCatalog(...args)),
   images: (category, ...args) => mockApiPromise.then((mock) => mock.images(category, ...args))
     .then((result) => validateImages(result, category, { origin: window.location.origin, base, mock: true })),
   publish: (...args) => mockApiPromise.then((mock) => mock.publish(...args)),

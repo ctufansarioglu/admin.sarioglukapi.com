@@ -1,5 +1,6 @@
 import AppLayout from './components/AppLayout.jsx'
 import CatalogWorkspace from './components/CatalogWorkspace.jsx'
+import ShareConfirmationProvider from './components/ShareConfirmationProvider.jsx'
 
 function InfoBanner() {
   return <div className="info-banner">
@@ -8,9 +9,11 @@ function InfoBanner() {
 }
 
 export default function App() {
-  return <AppLayout>
-    <CatalogWorkspace>
-      <InfoBanner />
-    </CatalogWorkspace>
-  </AppLayout>
+  return <ShareConfirmationProvider>
+    <AppLayout>
+      <CatalogWorkspace>
+        <InfoBanner />
+      </CatalogWorkspace>
+    </AppLayout>
+  </ShareConfirmationProvider>
 }

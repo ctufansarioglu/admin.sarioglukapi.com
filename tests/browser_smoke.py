@@ -16,6 +16,22 @@ def run():
         page.get_by_role('heading', name='Ahşap Doğrama Kapılar').wait_for()
         page.get_by_role('button', name='Fotoğraf Ekle').wait_for(state='visible')
         page.locator('.product').first.wait_for()
+        page.locator('.site-header').get_by_role('button', name='Kataloğu Paylaş').click()
+        dialog = page.get_by_role('dialog')
+        assert dialog.get_by_text('Katalog kayıtlı e-posta adreslerine gönderilecek.', exact=False).is_visible()
+        assert dialog.get_by_text('yayınlanmamış düzenlemeler dahil edilmez', exact=False).is_visible()
+        count_before_drop = page.locator('.product').count()
+        page.evaluate('''() => {
+          const transfer = new DataTransfer();
+          transfer.items.add(new File(['test'], 'blocked.png', { type: 'image/png' }));
+          window.dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }));
+        }''')
+        assert page.locator('.product').count() == count_before_drop
+        page.get_by_role('button', name='Vazgeç').click()
+        assert not page.get_by_text('Örnek paylaşım isteği alındı.', exact=False).is_visible()
+        page.get_by_role('button', name='Kataloğu Paylaş').click()
+        page.get_by_role('button', name='Evet, Paylaş').click()
+        page.get_by_text('Örnek paylaşım isteği alındı. E-posta gönderilmedi.').wait_for()
         before = page.locator('.product').count()
         sidebar = page.locator('.sidebar')
         assert sidebar.get_by_role('button', name='Ahşap Doğrama', exact=False).locator('.category-count').inner_text() == str(before)
@@ -46,11 +62,28 @@ def run():
         mobile = browser.new_page(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
         mobile.goto(BASE)
         mobile.locator('.product').first.wait_for()
+        assert mobile.locator('.site-header').get_by_role('button', name='Kataloğu Paylaş').is_visible()
+        mobile.locator('.site-header').get_by_role('button', name='Kataloğu Paylaş').click()
+        mobile.get_by_role('button', name='Evet, Paylaş').click()
+        mobile.get_by_text('Örnek paylaşım isteği alındı. E-posta gönderilmedi.').wait_for()
+        assert mobile.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
         mobile.get_by_label('Kategori', exact=True).select_option('pvc')
         mobile.get_by_role('heading', name='PVC Kapılar').wait_for()
         mobile.get_by_role('button', name='PVC-02 fotoğrafını önceki sıraya taşı').click()
         assert mobile.get_by_text('1 değişiklik yayınlanmayı bekliyor').is_visible()
         assert mobile.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+
+        share_failure = browser.new_page()
+        share_failure.goto(BASE + '?mockError=share-catalog')
+        share_failure.get_by_role('button', name='Kataloğu Paylaş').click()
+        share_failure.get_by_role('button', name='Evet, Paylaş').click()
+        share_failure.get_by_text('Katalog paylaşımı başlatılamadı.', exact=False).wait_for()
+
+        share_uncertain = browser.new_page()
+        share_uncertain.goto(BASE + '?mockError=share-catalog-uncertain')
+        share_uncertain.get_by_role('button', name='Kataloğu Paylaş').click()
+        share_uncertain.get_by_role('button', name='Evet, Paylaş').click()
+        share_uncertain.get_by_text('İsteğin sonucu doğrulanamadı.', exact=False).wait_for()
 
         drag = browser.new_page(viewport={'width': 1280, 'height': 900})
         drag.goto(BASE)

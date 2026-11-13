@@ -12,7 +12,10 @@ export const responsiveStyles = css`  @media (hover: none) { .drag-cue { opacity
   }
   @media (max-width: 640px) {
     .header-inner, .page, .publish-inner { width: calc(100% - 28px); }
-    .header-inner { gap: 18px; }
+    .header-inner { gap: 18px; padding: 10px 0; }
+    .header-actions { flex-direction: column; align-items: flex-end; gap: 6px; }
+    .catalog-share { max-width: min(230px, calc(100vw - 150px)); }
+    .catalog-share .button { min-height: 34px; padding: 0 10px; font-size: .72rem; }
     .brand span { font-size: 1.15rem; }
     .brand small { font-size: .59rem; }
     .header-title { gap: 7px; padding: 8px 10px; }

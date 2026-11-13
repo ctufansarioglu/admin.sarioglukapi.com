@@ -15,6 +15,8 @@ Kategoriler istemcide sabittir. Kenar çubuğundaki kayıtlı fotoğraf sayısı
 
 Ek hata senaryoları: `?mockError=read-images` görsel listesinin yüklenememesini, `?mockError=publish-response-lost` kaydı tamamlanan yayının yanıtının kaybolmasını, `?mockError=refresh-after-publish` ise başarılı yayın sonrası listenin okunamamasını simüle eder. İsteğe bağlı tarayıcı kontrolleri için geliştirme sunucusu çalışırken Python Playwright ile `python tests/browser_smoke.py` çalıştırılabilir.
 
+Katalog paylaşımı geliştirme modunda e-posta göndermez. `?mockError=share-catalog` ile reddedilen istek, `?mockError=share-catalog-uncertain` ile sonucu belirsiz istek denenebilir.
+
 ## Ortam değişkenleri
 
 | Değişken | Varsayılan | Amaç |
@@ -40,6 +42,9 @@ Bu dizini ayrı bir GitHub deposuna aktarın; kullanıcı açıkça istemedikçe
 - `src/assets/mock/`: yalnızca development modundaki örnek ürün fotoğrafları.
 - `src/styles/`: tasarım değerleri, yerleşim, galeri ve durumlar için Emotion stilleri.
 - `workers/category-images.js`: Cloudflare fotoğraf listeleme Worker'ı; [kurulum](docs/CATEGORY-IMAGES-WORKER.md).
+- `workers/me.js`: Cloudflare Access kullanıcı bilgisi Worker'ı; [kurulum](docs/ME-WORKER.md).
+- `workers/publish.js`: GitHub'a fotoğraf yayınlama Worker'ı; [kurulum](docs/PUBLISH-WORKER.md).
+- `workers/catalog-share.js`: katalog gönderim workflow'unu başlatan Worker; [kurulum](docs/CATALOG-SHARE-WORKER.md).
 - `.github/workflows/deploy.yml`: panelin bağımsız Pages workflow'u.
 - `docs/WORKER-API.md`: uygulanması gereken Worker sözleşmesi.
 - `tests/`: hedefli taslak ve doğrulama testleri.

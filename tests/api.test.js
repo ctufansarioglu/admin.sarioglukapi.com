@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createApiClient, isAmbiguousPublishError } from '../src/services/client.js'
+import { createApiClient, isAmbiguousRequestError } from '../src/services/client.js'
 
 const origin = 'https://admin.example.com'
 const json = (value, status = 200) => new Response(JSON.stringify(value), {
@@ -43,17 +43,32 @@ test('boş taslak boş manifest olarak gönderilir', async () => {
   assert.deepEqual(JSON.parse(body.get('manifest')), { expectedRevision: 'rev', items: [] })
 })
 
+test('katalog paylaşımı yalnızca onaylanan endpointi POST ile çağırır', async () => {
+  let request
+  const api = createApiClient({ origin, fetcher: async (url, options) => {
+    request = { url, options }
+    return json({ status: 'queued' }, 202)
+  } })
+  assert.deepEqual(await api.shareCatalog(), { status: 'queued' })
+  assert.equal(request.url, '/api/catalog/share')
+  assert.equal(request.options.method, 'POST')
+  assert.equal(request.options.body, undefined)
+
+  const ambiguous = createApiClient({ origin, fetcher: async () => json({ status: 'unknown' }) })
+  await assert.rejects(ambiguous.shareCatalog(), (error) => isAmbiguousRequestError(error))
+})
+
 test('hata kodları ve belirsiz yayın sonuçları güvenli şekilde ayrılır', async () => {
   for (const status of [401, 403, 409, 413, 429, 500, 502, 503]) {
     const api = createApiClient({ origin, fetcher: async () => json({ secret: 'do not display' }, status) })
     await assert.rejects(api.publish('ahsap', 'rev', []), (error) => {
       assert.equal(error.status, status)
       assert.equal(error.message.includes('do not display'), false)
-      assert.equal(isAmbiguousPublishError(error), status >= 500)
+      assert.equal(isAmbiguousRequestError(error), status >= 500)
       return true
     })
   }
-  assert.equal(isAmbiguousPublishError({ status: 0 }), true)
+  assert.equal(isAmbiguousRequestError({ status: 0 }), true)
 })
 
 test('görsel snapshot yanıtları sözleşmeye göre doğrulanır', async () => {

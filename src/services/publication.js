@@ -1,4 +1,4 @@
-import { isAmbiguousPublishError } from './client.js'
+import { isAmbiguousRequestError } from './client.js'
 
 // A failed response cannot establish whether the Worker committed the request.
 export async function publishDraft(api, category, revision, items) {
@@ -13,6 +13,6 @@ export async function publishDraft(api, category, revision, items) {
       return { kind: 'saved-unrefreshed' }
     }
   } catch (error) {
-    return { kind: isAmbiguousPublishError(error) ? 'uncertain' : 'rejected', error }
+    return { kind: isAmbiguousRequestError(error) ? 'uncertain' : 'rejected', error }
   }
 }

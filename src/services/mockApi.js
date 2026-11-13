@@ -17,6 +17,13 @@ async function simulate(operation) {
 }
 export const mockApi = {
   me: async () => { await simulate('read'); return { email: 'ornek@sarioglukapi.com' } },
+  shareCatalog: async () => {
+    await simulate('share')
+    const error = new URLSearchParams(window.location.search).get('mockError')
+    if (error === 'share-catalog') throw new ApiError(403, 'Örnek paylaşım hatası.')
+    if (error === 'share-catalog-uncertain') throw new ApiError(0, 'Örnek bağlantı kesintisi.')
+    return { status: 'queued' }
+  },
   images: async (id) => { await simulate('images'); return { category: id, revision: `mock-revision-${revision}`, images: data[id].map((item) => ({ ...item })) } },
   publish: async (id, expected, items) => {
     await simulate('publish')

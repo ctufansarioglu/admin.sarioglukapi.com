@@ -23,6 +23,6 @@ Bu işlemler kullanıcı tarafından yapılır; bu proje Cloudflare'da otomatik 
 1. Fotoğraf listeleme Worker'ını [kurulum rehberine](CATEGORY-IMAGES-WORKER.md) göre yapılandırın. Diğer endpoint'ler için [API sözleşmesini](WORKER-API.md) izleyin. Token'ı Worker secret olarak tanımlayın; Worker koduna veya frontend build'ine koymayın.
 2. Fotoğraf Worker'ı için Workers & Pages → ilgili Worker → Settings → Domains & Routes → Add → Route: `admin.sarioglukapi.com/api/category-images/*` ve ilgili zone. Bu bir **route**'tur; panelin tamamına Worker custom domain atamayın. DNS kaydı proxied olmalıdır.
 3. Fotoğraf Worker'ının erişimi Cloudflare Access tarafından yönetilir; Worker içinde ek JWT doğrulaması yapılmaz. [Worker Access seçenekleri](https://developers.cloudflare.com/workers/configuration/cloudflare-access/).
-4. `/api/me` ve yayınlama endpoint'lerini kendi rotaları ve uygulamalarıyla ayrıca yapılandırın.
+4. `/api/me`, yayınlama ve katalog paylaşımı endpoint'lerini sırasıyla [kimlik](ME-WORKER.md), [yayınlama](PUBLISH-WORKER.md) ve [katalog paylaşımı](CATALOG-SHARE-WORKER.md) rehberlerindeki ayrı Worker'larla yapılandırın.
 
 GitHub Pages statik dosyaları varsayılan `github.io` adresinden erişilebilir olabilir; Access bu origin'i gizli hale getirmez. Frontend kodu ve içeriği herkese açık kabul edilir.

@@ -18,6 +18,6 @@ Kod ve ayarlar hazır olduğunda Worker editöründeki dağıtım işlemini kull
 
 Önizlemeler, listeyle aynı commit'e sabitlenmiş `raw.githubusercontent.com` adreslerinden doğrudan tarayıcıya yüklenir; fotoğraf başına Worker isteği yapılmaz. Bu yöntem deponun herkese açık olmasına bağlıdır. GitHub ağacı eksik veya kesilmişse ya da kategori klasöründe sayısal PNG dışı içerik varsa Worker eksik liste döndürmek yerine hata verir.
 
-`/api/me` ve `/api/categories/:category/publish` bu Worker tarafından sağlanmaz. Panelin oturum bilgisi ve yayınlama işlevleri için bu endpoint'lerin ayrıca uygulanması ve kendi rotalarına bağlanması gerekir.
+`/api/me` ve `/api/categories/:category/publish` bu Worker tarafından sağlanmaz. Bunlar için [kimlik](ME-WORKER.md) ve [yayınlama](PUBLISH-WORKER.md) Worker'ları bulunur.
 
 Kaynaklar: [Worker secret'ları](https://developers.cloudflare.com/workers/configuration/secrets/), [GitHub Git ağaçları](https://docs.github.com/en/rest/git/trees) ve [GitHub dosya içerikleri](https://docs.github.com/en/rest/repos/contents).

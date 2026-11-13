@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 
 export const layoutStyles = css`  .site-header { border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
   .header-inner { width: min(calc(100% - 40px), 1200px); min-height: 70px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+  .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
   .brand { display: inline-flex; flex-direction: column; gap: 4px; flex-shrink: 0; color: #171c19; text-decoration: none; line-height: 1.05; }
   .brand span { font-size: clamp(1.25rem, 2.1vw, 1.6rem); font-weight: 800; letter-spacing: -.035em; }
   .brand small { color: var(--color-accent); font-size: .72rem; font-weight: 700; letter-spacing: .09em; line-height: 1.3; }
@@ -13,6 +14,10 @@ export const layoutStyles = css`  .site-header { border-bottom: 1px solid var(--
   .info-banner { margin: 12px 0 0; padding: 12px 14px; background: #f3f3f1; color: var(--color-accent); font-size: .8rem; line-height: 1.55; }
   .info-banner p { max-width: 900px; }
   .info-banner span { display: block; margin-top: 5px; color: var(--color-muted); font-size: .73rem; }
+  .catalog-share { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 0; }
+  .catalog-share-feedback { max-width: 300px; font-size: .75rem; text-align: right; overflow-wrap: anywhere; }
+  .catalog-share-feedback.error { color: #763e32; }
+  .catalog-share-feedback a { color: inherit; text-decoration: underline; }
   .workspace { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 36px; }
   .sidebar { padding-top: 23px; }
   .sidebar-heading { margin-bottom: 9px; color: var(--color-muted); font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }

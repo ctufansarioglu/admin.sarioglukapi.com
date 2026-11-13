@@ -15,7 +15,7 @@ const messages = {
 }
 
 const invalid = () => new ApiError(0, 'Ürün bilgileri okunamadı. Lütfen tekrar deneyin.')
-export const isAmbiguousPublishError = (error) => !error || error.status === 0 || error.status >= 500 || error.status == null
+export const isAmbiguousRequestError = (error) => !error || error.status === 0 || error.status >= 500 || error.status == null
 
 export function validateIdentity(result) {
   if (typeof result?.email !== 'string' || !result.email.trim()) throw invalid()
@@ -65,6 +65,11 @@ export function createApiClient({ origin, base = '/api', fetcher = globalThis.fe
   }
   return {
     me: async (options) => validateIdentity(await request('/me', options)),
+    shareCatalog: async () => {
+      const result = await request('/catalog/share', { method: 'POST' })
+      if (result?.status !== 'queued') throw new ApiError(0, 'Katalog paylaşımının sonucu doğrulanamadı.')
+      return result
+    },
     images: async (category, options) => validateImages(await request(`/category-images/${encodeURIComponent(category)}`, options), category, { origin, base }),
     publish: (category, revision, items) => {
       const form = new FormData()

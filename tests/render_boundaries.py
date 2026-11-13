@@ -15,7 +15,7 @@ RENDER_OBSERVER = r'''
     inject(renderer) { this.renderers.set(1, renderer); return 1 },
     onCommitFiberUnmount() {},
     onCommitFiberRoot(_, root) {
-      const tracked = new Set(['App', 'AppLayout', 'InfoBanner', 'CatalogWorkspace', 'CatalogHeader', 'Sidebar', 'PublishBarState', 'PublishBar', 'StatusDot', 'DraftCount', 'DraftDescription', 'DiscardButton', 'PublishButton', 'GalleryArea', 'ImageGrid', 'Product']);
+      const tracked = new Set(['App', 'AppLayout', 'InfoBanner', 'CatalogShare', 'CatalogWorkspace', 'CatalogHeader', 'Sidebar', 'PublishBarState', 'PublishBar', 'StatusDot', 'DraftCount', 'DraftDescription', 'DiscardButton', 'PublishButton', 'GalleryArea', 'ImageGrid', 'Product']);
       const current = new Map();
       const rendered = [];
       const previous = this.previous || new Map();
@@ -60,6 +60,15 @@ def run():
         page.locator('.product').first.wait_for()
         page.wait_for_timeout(300)
         assert page.evaluate("['App:', 'AppLayout:', 'InfoBanner:', 'CatalogWorkspace:', 'CatalogHeader:', 'Sidebar:', 'PublishBar:', 'StatusDot:', 'DraftCount:', 'DraftDescription:', 'DiscardButton:', 'PublishButton:', 'GalleryArea:', 'ImageGrid:'].every(key => window.__REACT_DEVTOOLS_GLOBAL_HOOK__.previous.has(key))")
+
+        reset(page)
+        page.get_by_role('button', name='Kataloğu Paylaş').click()
+        page.get_by_role('button', name='Evet, Paylaş').click()
+        page.get_by_text('Örnek paylaşım isteği alındı.', exact=False).wait_for()
+        commits = rendered(page)
+        assert_static_layout(commits)
+        assert 'CatalogShare:' in commits, commits
+        assert not any(name.startswith(('CatalogWorkspace:', 'Sidebar:', 'ImageGrid:', 'Product:')) for name in commits), commits
 
         reset(page)
         products = page.locator('.product')
