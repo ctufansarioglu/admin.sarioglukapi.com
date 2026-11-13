@@ -1,0 +1,58 @@
+"""Check real API requests against a Vite server started with VITE_USE_MOCK=false."""
+from pathlib import Path
+from urllib.parse import urlparse
+from playwright.sync_api import sync_playwright
+
+BASE = 'http://127.0.0.1:5174/'
+PHOTO = Path(__file__).resolve().parents[1] / 'src/assets/mock/ahsap/01.png'
+
+
+def run():
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        page = browser.new_page()
+        requests = []
+
+        def respond(route):
+            path = urlparse(route.request.url).path
+            requests.append(path)
+            if path == '/api/me':
+                route.fulfill(json={'email': 'admin@example.com'})
+            elif path in ('/api/categories/ahsap/images', '/api/categories/lake/images'):
+                category = path.split('/')[3]
+                count = 2 if category == 'ahsap' else 1
+                images = [{
+                    'name': f'{index:02}.png',
+                    'path': f'{category}/{index:02}.png',
+                    'sha': f'sha-{index}',
+                    'previewUrl': f'/api/preview/{category}/{index:02}.png',
+                } for index in range(1, count + 1)]
+                route.fulfill(json={'category': category, 'revision': 'rev', 'images': images})
+            elif path.startswith('/api/preview/'):
+                route.fulfill(body=PHOTO.read_bytes(), content_type='image/png')
+            else:
+                route.fulfill(status=404, json={'error': 'unexpected request'})
+
+        page.route('**/api/**', respond)
+        page.goto(BASE)
+        page.locator('.product').first.wait_for()
+        sidebar = page.locator('.sidebar')
+        ahsap = sidebar.get_by_role('button', name='Ahşap Doğrama', exact=False)
+        lake = sidebar.get_by_role('button', name='Lake', exact=False)
+        assert ahsap.locator('.category-count').inner_text() == '2'
+        assert lake.locator('.category-count').inner_text() == '—'
+        lake.click()
+        page.get_by_role('heading', name='Lake Kapılar').wait_for()
+        page.locator('.product').first.wait_for()
+        assert lake.locator('.category-count').inner_text() == '1'
+        assert ahsap.locator('.category-count').inner_text() == '2'
+        assert '/api/me' in requests
+        assert '/api/categories/ahsap/images' in requests
+        assert '/api/categories/lake/images' in requests
+        assert '/api/categories' not in requests
+        browser.close()
+        print('Only identity and requested category images were fetched.')
+
+
+if __name__ == '__main__':
+    run()

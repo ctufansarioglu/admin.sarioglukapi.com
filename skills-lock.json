@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "skills": {
+    "react-2026": {
+      "source": "PatternsDev/skills",
+      "sourceType": "github",
+      "skillPath": "react/react-2026/SKILL.md",
+      "computedHash": "5c52074e3d95b4c800c7b477fe6750e82e59e3d25284f5b10fac4e59419f1813"
+    },
+    "react-component-performance": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "skillPath": "react-component-performance/SKILL.md",
+      "computedHash": "96bab740575cd7e4d60516f28fc3e8f2177bfd471d8ffebf1f7ecfe4600b4be7"
+    },
+    "react-composition-2026": {
+      "source": "PatternsDev/skills",
+      "sourceType": "github",
+      "skillPath": "react/react-composition-2026/SKILL.md",
+      "computedHash": "c25f140cafc48830002558519247ce619322702776b06c6d6f1b14b2cc9bd1f6"
+    },
+    "react-data-fetching": {
+      "source": "PatternsDev/skills",
+      "sourceType": "github",
+      "skillPath": "react/react-data-fetching/SKILL.md",
+      "computedHash": "c3bc6dcf900ef4927b881c6e8241c0ece0b577e174f2e19c20686877b65d9354"
+    },
+    "react-render-optimization": {
+      "source": "PatternsDev/skills",
+      "sourceType": "github",
+      "skillPath": "react/react-render-optimization/SKILL.md",
+      "computedHash": "a2925cebb8a371b27db1521201fc25c543b54e215f6d7d67d8e8568aaf601cb0"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f711ed8b16162eaa712abbcdbbae6c926f86c57e60127735fecc3ad0dd85b3fa"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "4f68ae07187fb0d1fb78c88b503d089da4cf5a9d9625d1f2e425b1590bf96d92"
+    }
+  }
+}
